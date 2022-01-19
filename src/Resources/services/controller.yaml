@@ -1,0 +1,10 @@
+services:
+
+  Bundles\CodeGeneratorBundle\Controller\SnippetController:
+    arguments:
+      - '@Bundles\CodeGeneratorBundle\Repository\SnippetRepository'
+      - '@Bundles\CodeGeneratorBundle\Repository\SnippetFileRepository'
+    calls: [ [ 'setContainer', [ '@Psr\Container\ContainerInterface' ] ] ]
+    tags:
+      - controller.service_arguments
+      - container.service_subscriber

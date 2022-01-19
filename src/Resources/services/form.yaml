@@ -1,0 +1,7 @@
+services:
+
+  Bundles\CodeGeneratorBundle\Form\SnippetFileType:
+    arguments:
+      - '@twig'
+    tags:
+      - { name: form.type }

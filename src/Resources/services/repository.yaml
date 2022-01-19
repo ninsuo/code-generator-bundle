@@ -1,0 +1,13 @@
+services:
+
+  Bundles\CodeGeneratorBundle\Repository\SnippetRepository:
+    arguments:
+      - '@Doctrine\Common\Persistence\ManagerRegistry'
+    tags:
+      - 'doctrine.repository_service'
+
+  Bundles\CodeGeneratorBundle\Repository\SnippetFileRepository:
+    arguments:
+      - '@Doctrine\Common\Persistence\ManagerRegistry'
+    tags:
+      - 'doctrine.repository_service'

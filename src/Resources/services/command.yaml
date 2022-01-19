@@ -1,0 +1,9 @@
+services:
+
+  Bundles\CodeGeneratorBundle\Command\SnippetCommand:
+    arguments:
+      - '@Bundles\CodeGeneratorBundle\Repository\SnippetRepository'
+      - '@parameter_bag'
+      - '@twig'
+    tags:
+      - console.command

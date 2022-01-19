@@ -1,0 +1,316 @@
+{% extends '@CodeGenerator/base.html.twig' %}
+
+{% block title %}
+    Snippet:
+    <span class="current-item">
+        {% if current.name %}
+            {{ current.name }}
+        {% else %}
+            <em>No name</em>
+        {% endif %}
+    </span>
+{% endblock %}
+
+{% block actions %}
+    {% if current.id %}
+        <a class="btn btn-sm btn-danger"
+           href="{{ path('snippet_remove', {id: current.id, token: csrf_token('token')}) }}"
+           onclick="return confirm('Really remove snippet &quot;{{ current.name }}&quot;?');">Remove</a>
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+    <div class="row">
+        <div class="col-3">
+            {# Snippet selection #}
+            {{ block('snippets') }}
+        </div>
+        <div class="col-9">
+            {# Snippet edition #}
+            {{ block('editor') }}
+        </div>
+    </div>
+{% endblock %}
+
+{% block snippets %}
+    <ul class="nav flex-column nav-pills">
+        {% for item in list %}
+            <li class="nav-item">
+                <a class="nav-link {% if item == current %}active current-item{% endif %}"
+                   href="{{ path('snippet_index', {id: item.id}) }}">
+                    {% if item.name %}
+                        {{ item.name }}
+                    {% else %}
+                        <em>No name</em>
+                    {% endif %}
+                </a>
+            </li>
+        {% endfor %}
+        {% if not current.id %}
+            <li class="nav-item">
+                <a class="nav-link active current-item"
+                   href="{{ path('snippet_index', {id: '00000'}) }}"
+                   onclick="return false;">
+                    <em>No name</em>
+                </a>
+            </li>
+        {% endif %}
+    </ul>
+
+    <br/>
+
+    <div class="text-left">
+        <a class="btn btn-sm btn-outline-primary" href="{{ path('snippet_index') }}">New</a>
+    </div>
+{% endblock %}
+
+{% block editor %}
+    {% form_theme form _self %}
+    {{ form_start(form) }}
+    {{ form_row(form.name) }}
+
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="context-tab" data-bs-toggle="tab" data-bs-target="#context-content" type="button" role="tab">
+                        Context (YAML)
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="enricher-tab" data-bs-toggle="tab" data-bs-target="#enricher-content" type="button" role="tab">
+                        Context enricher (PHP)
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane show active" id="context-content" role="tabpanel">
+                    {{ form_row(form.context) }}
+                </div>
+                <div class="tab-pane" id="enricher-content" role="tabpanel">
+                    {{ form_row(form.enricher) }}
+                </div>
+            </div>
+        </div>
+        <div class="card-footer py-4">
+            <div id="context">{{ current.dumpContext|raw }}</div>
+        </div>
+    </div>
+
+    <hr/>
+
+    <div id="files">
+        {{ form_row(form.files) }}
+
+        <a href="#" id="add-file" class="btn btn-outline-success">Add file</a>
+    </div>
+
+    {{ form_end(form) }}
+{% endblock %}
+
+{% block _snippet_files_entry_row %}
+
+    {% if name == '__name__' %}
+        {% set index = name %}
+        {% set context = [] %}
+    {% else %}
+        {% set index = (name|number_format + 1) %}
+        {% set context = value.snippet.createContext %}
+    {% endif %}
+
+    <div id="file-{{ index }}" class="file">
+        {{ form_row(form.destination) }}
+
+        <div class="card">
+            <div class="card-header">
+                <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="context-tab" data-bs-toggle="tab" data-bs-target="#file-template-{{ index }}" type="button" role="tab">
+                            Template (Twig)
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="enricher-tab" data-bs-toggle="tab" data-bs-target="#file-result-{{ index }}" type="button" role="tab">
+                            Result
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-body">
+                <div class="tab-content" style="min-height: 350px;">
+                    <div class="tab-pane show active" id="file-template-{{ index }}" role="tabpanel">
+                        {{ form_row(form.template) }}
+
+                        <div class="text-end">
+                            <a href="#" class="btn btn-outline-danger delete-file" data-index="{{ index }}">X</a>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="file-result-{{ index }}" role="tabpanel">
+                        <div class="mb-3">
+                            <label for="rendered-destination-{{ index }}" class="form-label">
+                                Destination
+                            </label>
+                            <div class="float-end">
+                                <a href="#" class="btn-outline-secondary copy-to-clipboard" data-target="#rendered-destination-{{ index }}">Copy</a>
+                            </div>
+                            <pre class="form-control" id="rendered-destination-{{ index }}">{{ value.renderedDestination(twig, context)|default(null)|raw }}</pre>
+                        </div>
+
+                        <div class="float-end">
+                            <a href="#" class="btn btn-sm btn-outline-secondary copy-to-clipboard" data-target="#rendered-template-{{ index }}">Copy</a>
+                        </div>
+                        <pre id="rendered-template-{{ index }}">{{ value.renderedTemplate(twig, context)|default(null)|raw }}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        $(function () {
+            initializeTemplateEditor('{{ index }}', '{{ form.template.vars.id }}');
+        });
+    </script>
+
+{% endblock %}
+
+{% block scripts %}
+    <script type="text/javascript">
+
+        var interval = null;
+        var saveSnippet = function () {
+            if (interval) {
+                clearTimeout(interval);
+            }
+            interval = setTimeout(function () {
+                $.ajax({
+                    type: 'POST',
+                    url: '{{ path('snippet_index', {id: current.id}) }}',
+                    data: $('form').serialize(),
+                    success: function (data) {
+                        $('#context').html(data.context);
+
+                        var currentItem = $('.current-item');
+
+                        $('#{{ form.id.vars.id }}').val(data.snippet.id);
+
+                        if (typeof currentItem.attr('href') !== 'undefined' && currentItem.attr('href') !== false) {
+                            currentItem.attr('href', currentItem.attr('href').replace('00000', data.snippet.id));
+                        }
+                        if (typeof currentItem.attr('onclick') !== 'undefined' && currentItem.attr('onclick') !== false) {
+                            currentItem.removeAttr('onclick');
+                        }
+                        currentItem.html(
+                            data.snippet.name ?? '<em>No name</em>'
+                        );
+
+                        $.each(data.templates, function (index, content) {
+                            $('#rendered-destination-' + index).html(content.destination);
+                            $('#rendered-template-' + index).html(content.template);
+                        });
+                    },
+                    error: function (data) {
+                        console.log(data);
+                    }
+                });
+            }, 200);
+        }
+
+        var editorOptions = {
+            lineNumbers: true,
+            indentUnit: 2,
+            indentWithTabs: false,
+            smartIndent: true,
+            fixedGutter: true,
+            extraKeys: {
+                Tab: function (cm) {
+                    var spaces = Array(cm.getOption("indentUnit") + 1).join(" ");
+                    cm.replaceSelection(spaces, 'end');
+                }
+            }
+        };
+
+        var contextEditor = CodeMirror.fromTextArea(document.getElementById("{{ form.context.vars.id }}"), $.extend(true, editorOptions, {
+            mode: "yaml",
+        }));
+        contextEditor.on('change', function () {
+            contextEditor.save();
+        });
+
+        var enricherEditor = null;
+        $('#enricher-tab').click(function () {
+            if (null !== enricherEditor) {
+                return;
+            }
+
+            enricherEditor = CodeMirror.fromTextArea(document.getElementById("{{ form.enricher.vars.id }}"), $.extend(true, editorOptions, {
+                matchBrackets: true,
+                mode: "text/x-php",
+            }));
+
+            enricherEditor.on('change', function () {
+                enricherEditor.save();
+            });
+        });
+
+        var templateEditors = [];
+        var initializeTemplateEditor = function (index, textareaId) {
+            templateEditors[index] = CodeMirror.fromTextArea(document.getElementById(textareaId), $.extend(true, editorOptions, {
+                mode: "twig",
+            }));
+
+            templateEditors[index].on('change', function () {
+                templateEditors[index].save();
+            });
+        };
+
+        $('body').on('keyup', 'input, textarea', function () {
+            saveSnippet();
+        });
+
+        $('body').on('click', '#add-file', function (e) {
+            e.preventDefault();
+
+            var button = $(this);
+
+            var collection = $('#{{ form.files.vars.id }}');
+            var index = collection.data('index') ?? $('.file').length + 1;
+            var entry = collection.data('prototype').replace(/__name__/g, index);
+
+            button.before(entry);
+
+            collection.data('index', index + 1);
+
+            saveSnippet();
+        });
+
+        $('body').on('click', '.delete-file', function (e) {
+            e.preventDefault();
+
+            var index = $(this).data('index');
+            templateEditors[index] = null;
+            $('#file-' + index).remove();
+
+            saveSnippet();
+        });
+
+        $('body').on('click', '.copy-to-clipboard', function (e) {
+            e.preventDefault();
+            var that = $(this);
+            var target = $(that.data('target'));
+            navigator.clipboard.writeText(target.text()).then(function () {
+                that.tooltip({
+                    title: 'Copied!',
+                    trigger: 'manual',
+                });
+                that.tooltip('show');
+                setTimeout(function () {
+                    that.tooltip('hide');
+                }, 1000);
+            });
+        });
+
+    </script>
+{% endblock %}
