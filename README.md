@@ -28,6 +28,16 @@ You'll need to set up a storage, in `.env` you may uncomment:
 composer require --dev ninsuo/code-generator-bundle
 ```
 
+or in `composer.json`:
+
+```json
+{
+  "require": {
+    "ninsuo/code-generator-bundle": "dev-main"
+  }
+}
+```
+
 #### Add the bundle
 
 The PHP enricher is a beautiful RCE vulnerability, so please enable this bundle in development environment only!
