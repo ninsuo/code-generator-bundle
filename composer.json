@@ -1,8 +1,7 @@
 {
+  "name": "ninsuo/code-generator-bundle",
   "type": "bundle",
   "license": "MIT",
-  "minimum-stability": "stable",
-  "prefer-stable": true,
   "autoload": {
     "psr-4": {
       "Bundles\\CodeGeneratorBundle\\": "src/"

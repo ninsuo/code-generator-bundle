@@ -4,7 +4,23 @@
 
 Check out a few details and screenshots [here](docs/index.md).
 
-### Install
+### Standalone install
+
+You can install this generator standalone if needed, just download a new symfony project.
+
+Ensure [symfony cli](https://symfony.com/download) is installed and run:
+
+```
+symfony new codegen --full
+```
+
+You'll need to set up a storage, in `.env` you may uncomment:
+
+```
+# DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"
+```
+
+### Bundle install
 
 #### Use composer
 
