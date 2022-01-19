@@ -1,14 +1,11 @@
 {% extends '@CodeGenerator/base.html.twig' %}
 
 {% block title %}
-    Snippet:
-    <span class="current-item">
-        {% if current.name %}
-            {{ current.name }}
-        {% else %}
-            <em>No name</em>
-        {% endif %}
-    </span>
+    {% if current.name %}
+        {{ current.name }}
+    {% else %}
+        No name
+    {% endif %}
 {% endblock %}
 
 {% block actions %}
@@ -41,7 +38,7 @@
                     {% if item.name %}
                         {{ item.name }}
                     {% else %}
-                        <em>No name</em>
+                        No name
                     {% endif %}
                 </a>
             </li>
@@ -51,7 +48,7 @@
                 <a class="nav-link active current-item"
                    href="{{ path('snippet_index', {id: '00000'}) }}"
                    onclick="return false;">
-                    <em>No name</em>
+                    No name
                 </a>
             </li>
         {% endif %}
@@ -203,7 +200,7 @@
                             currentItem.removeAttr('onclick');
                         }
                         currentItem.html(
-                            data.snippet.name ?? '<em>No name</em>'
+                            data.snippet.name ?? 'No name'
                         );
 
                         $.each(data.templates, function (index, content) {
