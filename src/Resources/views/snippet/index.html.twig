@@ -113,7 +113,7 @@
         {% set index = name %}
         {% set context = [] %}
     {% else %}
-        {% set index = (name|number_format + 1) %}
+        {% set index = name|number_format %}
         {% set context = value.snippet.createContext %}
     {% endif %}
 

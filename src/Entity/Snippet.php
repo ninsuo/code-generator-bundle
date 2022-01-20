@@ -171,13 +171,23 @@ class Snippet
 
         $templates = [];
         foreach ($this->files as $index => $file) {
-            $templates[$index + 1] = [
+            $templates[$index] = [
                 'destination' => $file->getRenderedDestination($twig, $context, $escape),
-                'template'    => $file->getRenderedTemplate($twig, $context, $escape),
+                'template' => $file->getRenderedTemplate($twig, $context, $escape),
             ];
         }
 
         return $templates;
+    }
+
+    public function getContextAsArray() : array
+    {
+        return Yaml::parse($this->context);
+    }
+
+    public function setContextAsArray(array $context)
+    {
+        $this->context = Yaml::dump($context);
     }
 
     private function computeContext()
@@ -186,7 +196,7 @@ class Snippet
             return [];
         }
 
-        $context = Yaml::parse($this->context);
+        $context = $this->getContextAsArray();
 
         eval($this->enricher);
 

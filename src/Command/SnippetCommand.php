@@ -74,12 +74,20 @@ class SnippetCommand extends Command
 
         // Context
         $snippet = $snippets[$name];
-        $context = $snippet->createContext();
+
+        try {
+            $context = $snippet->getContextAsArray();
+        } catch (\Throwable $e) {
+            $context = [];
+        }
+
         do {
             $context = $this->interactToGatherContext($io, $context);
 
+            $snippet->setContextAsArray($context);
+
             $io->info('The following context will be used:');
-            dump($context);
+            dump($snippet->createContext());
             $io->writeln('');
 
         } while (!$io->confirm('Continue?'));
