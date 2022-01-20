@@ -50,6 +50,17 @@ class SnippetController extends AbstractController
 
         if ($form->isSubmitted()) {
             if ($form->isValid()) {
+
+                $imported = false;
+                if ($base64json = $form->get('import')->getData()) {
+                    if ($array = json_decode(base64_decode($base64json), true)) {
+                        if (is_array($array)) {
+                            $snippet->fromArray($array, $snippet);
+                            $imported = true;
+                        }
+                    }
+                }
+
                 $this->save($snippet);
 
                 return $this->json([
@@ -59,6 +70,8 @@ class SnippetController extends AbstractController
                     ],
                     'context'   => $snippet->dumpContext(),
                     'templates' => $snippet->dumpTemplates($twig),
+                    'export'    => $snippet->getExport(),
+                    'imported'  => $imported,
                 ]);
             }
 
@@ -93,12 +106,6 @@ class SnippetController extends AbstractController
 
     private function save(Snippet $snippet)
     {
-        $this->snippetRepository->persist($snippet);
-
-        foreach ($snippet->getFiles() as $file) {
-            $this->snippetFileRepository->persist($file);
-        }
-
-        $this->snippetFileRepository->flush();
+        $this->snippetRepository->save($snippet);
     }
 }

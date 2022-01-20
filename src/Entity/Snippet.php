@@ -49,9 +49,33 @@ class Snippet
      */
     private $files;
 
+    /**
+     * @var string
+     */
+    private $export;
+
     public function __construct()
     {
         $this->files = new ArrayCollection();
+    }
+
+    static public function fromImport(string $base64json) : static
+    {
+        return self::fromArray(
+            json_decode(base64_decode($base64json), true)
+        );
+    }
+
+    static public function fromArray(array $array, ?Snippet $snippet = null) : static
+    {
+        $snippet = $snippet ?? new static();
+
+        $snippet->name     = $array['n'] ?? null;
+        $snippet->context  = $array['c'] ?? null;
+        $snippet->enricher = $array['e'] ?? null;
+        $snippet->files    = new ArrayCollection(array_map(fn($file) => SnippetFile::fromArray($snippet, $file), $array['f'] ?? []));
+
+        return $snippet;
     }
 
     public function getId() : ?int
@@ -173,7 +197,7 @@ class Snippet
         foreach ($this->files as $index => $file) {
             $templates[$index] = [
                 'destination' => $file->getRenderedDestination($twig, $context, $escape),
-                'template' => $file->getRenderedTemplate($twig, $context, $escape),
+                'template'    => $file->getRenderedTemplate($twig, $context, $escape),
             ];
         }
 
@@ -188,6 +212,26 @@ class Snippet
     public function setContextAsArray(array $context)
     {
         $this->context = Yaml::dump($context);
+    }
+
+    public function getExport() : string
+    {
+        return base64_encode(json_encode($this->toArray()));
+    }
+
+    public function setExport(string $export) : self
+    {
+        return $this;
+    }
+
+    public function toArray() : array
+    {
+        return [
+            'n' => $this->name,
+            'c' => $this->context,
+            'e' => $this->enricher,
+            'f' => array_map(fn($file) => $file->toArray(), $this->files->toArray()),
+        ];
     }
 
     private function computeContext()

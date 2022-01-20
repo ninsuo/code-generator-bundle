@@ -33,7 +33,7 @@
     <ul class="nav flex-column nav-pills">
         {% for item in list %}
             <li class="nav-item">
-                <a class="nav-link {% if item == current %}active current-item{% endif %}"
+                <a class="nav-link {% if item == current %}active item-link current-item{% endif %}"
                    href="{{ path('snippet_index', {id: item.id}) }}">
                     {% if item.name %}
                         {{ item.name }}
@@ -45,7 +45,7 @@
         {% endfor %}
         {% if not current.id %}
             <li class="nav-item">
-                <a class="nav-link active current-item"
+                <a class="nav-link active item-link current-item"
                    href="{{ path('snippet_index', {id: '00000'}) }}"
                    onclick="return false;">
                     No name
@@ -102,6 +102,38 @@
         {{ form_row(form.files) }}
 
         <a href="#" id="add-file" class="btn btn-outline-success">Add file</a>
+    </div>
+
+    <hr/>
+
+    <div class="card">
+        <div class="card-header">
+            <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="export-tab" data-bs-toggle="tab" data-bs-target="#export-content" type="button" role="tab">
+                        Export...
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="import-tab" data-bs-toggle="tab" data-bs-target="#import-content" type="button" role="tab">
+                        Import...
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content">
+                <div class="tab-pane show active" id="export-content" role="tabpanel">
+                    {{ form_row(form.export) }}
+                    <div class="float-end">
+                        <a class="btn btn-sm btn-outline-secondary copy-to-clipboard" data-target="#{{ form.export.vars.id }}">Copy</a>
+                    </div>
+                </div>
+                <div class="tab-pane" id="import-content" role="tabpanel">
+                    {{ form_row(form.import) }}
+                </div>
+            </div>
+        </div>
     </div>
 
     {{ form_end(form) }}
@@ -189,16 +221,22 @@
                     success: function (data) {
                         $('#context').html(data.context);
 
-                        var currentItem = $('.current-item');
+                        var currentItem = $('.item-link');
 
                         $('#{{ form.id.vars.id }}').val(data.snippet.id);
 
                         if (typeof currentItem.attr('href') !== 'undefined' && currentItem.attr('href') !== false) {
                             currentItem.attr('href', currentItem.attr('href').replace('00000', data.snippet.id));
                         }
+
                         if (typeof currentItem.attr('onclick') !== 'undefined' && currentItem.attr('onclick') !== false) {
                             currentItem.removeAttr('onclick');
                         }
+
+                        if (data.imported && confirm('Import is successful, but page needs to be reloaded. Reload?')) {
+                            document.location = currentItem.attr('href');
+                        }
+
                         currentItem.html(
                             data.snippet.name ?? 'No name'
                         );
@@ -207,6 +245,8 @@
                             $('#rendered-destination-' + index).html(content.destination);
                             $('#rendered-template-' + index).html(content.template);
                         });
+
+                        $('#{{ form.export.vars.id }}').html(data.export);
                     },
                     error: function (data) {
                         console.log(data);

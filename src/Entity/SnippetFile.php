@@ -36,6 +36,17 @@ class SnippetFile
      */
     private $snippet;
 
+    static public function fromArray(Snippet $snippet, array $array) : static
+    {
+        $snippetFile = new static;
+
+        $snippetFile->destination = $array['d'] ?? null;
+        $snippetFile->template    = $array['t'] ?? null;
+        $snippetFile->snippet     = $snippet;
+
+        return $snippetFile;
+    }
+
     public function getId() : ?int
     {
         return $this->id;
@@ -85,6 +96,14 @@ class SnippetFile
     public function getRenderedTemplate(Environment $twig, array $context, bool $escape = true)
     {
         return $this->render($twig, $this->template, $context, $escape);
+    }
+
+    public function toArray() : array
+    {
+        return [
+            'd' => $this->destination,
+            't' => $this->template,
+        ];
     }
 
     private function render(Environment $twig, ?string $template, array $context, bool $escape) : string

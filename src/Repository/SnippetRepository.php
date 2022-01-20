@@ -18,4 +18,24 @@ class SnippetRepository extends BaseRepository
     {
         parent::__construct($registry, Snippet::class);
     }
+
+    public function save(Snippet $snippet)
+    {
+        $this->persist($snippet);
+
+        foreach ($snippet->getFiles() as $file) {
+            $this->persist($file);
+        }
+
+        $this->flush();
+    }
+
+    public function import(string $base64json) : Snippet
+    {
+        $snippet = Snippet::fromImport($base64json);
+
+        $this->save($snippet);
+
+        return $snippet;
+    }
 }

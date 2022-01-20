@@ -44,6 +44,20 @@ class SnippetType extends AbstractType
                 'required'      => false,
                 'delete_empty'  => true,
                 'by_reference'  => false,
+            ])
+            ->add('export', TextareaType::class, [
+                'label' => 'Export as JSON for sharing.',
+                'attr'  => [
+                    'readonly' => true,
+                    'rows'     => 12,
+                ],
+            ])
+            ->add('import', TextareaType::class, [
+                'label'  => 'Import from a JSON string.',
+                'attr'   => [
+                    'rows' => 12,
+                ],
+                'mapped' => false,
             ]);
     }
 
