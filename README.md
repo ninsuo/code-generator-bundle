@@ -2,7 +2,27 @@
 
 ### What is it?
 
-Check out a few details and screenshots [here](docs/index.md).
+It's a code generator heavily inspired from the Symfony maker, developed in a web interface.
+
+Create snippets:
+
+- Add your context in YAML
+- Enrich it with PHP code
+- Write down your Twig templates
+
+Use snippets
+
+- Either use "Copy" buttons in the UX
+- Or use the interactive maker-like command-line
+
+Share snippets:
+
+- Easily export and import snippets in the UX
+- Share snippets in a project using fixtures
+
+![intro](docs/images/0-intro.png)
+
+Check out more details and screenshots [here](docs/index.md).
 
 ### Standalone install
 
@@ -101,7 +121,7 @@ php bin/console doctrine:migrations:migrate
 
 #### Run
 
-Go to `/snippet` route
+Run `symfony start` and go to `http://127.0.0.1:8000/snippet` route
 
 ### Sharing snippets
 
